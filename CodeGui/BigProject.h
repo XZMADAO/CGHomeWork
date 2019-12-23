@@ -158,7 +158,8 @@ private:
 	int OffsetX;
 	int OffsetY;
 	int ChooseID;
-	
+	vector<int>ClipId;
+
 	void mousePressEvent(QMouseEvent *e);
 
 	void mouseMoveEvent(QMouseEvent *e);
@@ -166,6 +167,7 @@ private:
 	void paintEvent(QPaintEvent *e);
 	void SetFourPoint(int x1, int y1, int x, int y,int choose,int index);
 	int FindID(QMouseEvent *e);
+	vector<int> FindIDs(int x1,int y1,int x2,int y2);
 	bool IsinMap(QMouseEvent *e);
 
 	Ui::BigProjectClass ui;

@@ -692,6 +692,26 @@ int BigProject::FindID(QMouseEvent *e)
 	}
 	return id;
 }
+
+vector<int>BigProject::FindIDs(int x1, int y1, int x2, int y2)
+{
+	vector<int> id;
+	for (int j = 0; j < ufp.pd.size(); j++)
+	{
+		bool inrect=false;
+		for (int k = 0; k < ufp.pd[j].allpointx.size(); k++)
+		{
+			if (ufp.pd[j].allpointx[k]>x1 && ufp.pd[j].allpointy[k] > y1&&ufp.pd[j].allpointx[k] < x2 && ufp.pd[j].allpointy[k] <y2&&ufp.pd[j].type==LineType)
+				inrect = true;
+		}
+		if (inrect)
+		{
+			ClipId.push_back(ufp.pd[j].id);
+			id.push_back(j);
+		}
+	}
+	return id;
+}
 /*Paint Test*/
 
 void BigProject::paintEvent(QPaintEvent *e)
@@ -868,6 +888,7 @@ void BigProject::mousePressEvent(QMouseEvent *e)
 					}
 				}
 			}
+
 			ui.label_5->setPixmap(*ufp.drawingmap);
 		}
 	}
@@ -875,6 +896,7 @@ void BigProject::mousePressEvent(QMouseEvent *e)
 	{
 		if (e->button() == Qt::LeftButton)
 		{
+			ClipId.clear();
 			StartPoint = e->pos();
 			LastPoint = e->pos();
 			StartPoint.setX(StartPoint.x() - 10);
@@ -951,20 +973,36 @@ void BigProject::mouseMoveEvent(QMouseEvent *e)
 	}
 	if (ui.pushButton_8->isChecked())
 	{
-		if (IsPress)
+		if (e->buttons() & Qt::LeftButton)
 		{
-			LastPoint = e->pos();
-			LastPoint.setX(LastPoint.x() - 10);
-			LastPoint.setY(LastPoint.y() - 100);
-			OffsetX = LastPoint.x() - StartPoint.x();
-			OffsetY = LastPoint.y() - StartPoint.y();
-			StartPoint = LastPoint;
-			if (IsPress&&StartPoint.x() > 0)
+			if (IsPress)
 			{
-				int id = ChooseID;
-				Translate(id, OffsetX, OffsetY);
+				ufp.drawingmap->fill(Qt::transparent);
+				ui.label_5->setPixmap(*ufp.drawingmap);
+				LastPoint = e->pos();
+				LastPoint.setX(LastPoint.x() - 10);
+				LastPoint.setY(LastPoint.y() - 100);
+				OffsetX = LastPoint.x() - StartPoint.x();
+				OffsetY = LastPoint.y() - StartPoint.y();
+				StartPoint = LastPoint;
+				if (IsPress&&StartPoint.x() > 0)
+				{
+					int id = ChooseID;
+					Translate(id, OffsetX, OffsetY);
+					ufp.drawingpainter->setPen(QPen(*ufp.qcolor, 2));
+					for (int i = 0; i < ufp.pd.size(); i++)
+					{
+						if (ufp.pd[i].id == ChooseID)
+						{
+							for (int j = 0; j < ufp.pd[i].allpointx.size(); j++)
+							{
+								ufp.drawingpainter->drawPoint(ufp.pd[i].allpointx[j], ufp.pd[i].allpointy[j]);
+							}
+						}
+					}
+					ui.label_5->setPixmap(*ufp.drawingmap);
+				}
 			}
-	
 		}
 	}
 	if (ui.pushButton_9->isChecked())
@@ -1121,26 +1159,52 @@ void BigProject::mouseReleaseEvent(QMouseEvent *e)
 	}
 	if (ui.pushButton_8->isChecked())
 	{
-		IsPress = false;
-		StartPoint.setX(-1);
+		if (e->button() == Qt::LeftButton)
+		{
+			ufp.drawingmap->fill(Qt::transparent);
+			ui.label_5->setPixmap(*ufp.drawingmap);
+			ufp.drawingpainter->setPen(QPen(*ufp.qcolor, 1));
+			IsPress = false;
+			StartPoint.setX(-1);
+		}
 	}
 	if (ui.pushButton_9->isChecked())
 	{
 		
 		if (e->button() == Qt::LeftButton)
 		{
+			ufp.drawingpainter->setPen(QPen(*ufp.qcolor, 2));
+			int x1 = StartPoint.x();
+			int y1 = StartPoint.y();
+			int x2 = LastPoint.x();
+			int y2 = LastPoint.y();
+			if (x1 > x2)
+				swap(x1, x2);
+			if(y1 > y2)
+				swap(y1, y2);
+			vector<int>countorder = FindIDs(x1, y1, x2, y2);
+			for (int j = 0; j < countorder.size(); j++)
+			{
+				for (int k = 0; k < ufp.pd[countorder[j]].allpointx.size(); k++)
+				{
+					ufp.drawingpainter->drawPoint(ufp.pd[j].allpointx[k], ufp.pd[j].allpointy[k]);
+				}
+			}
+
 			IsPress = false;
+			ui.label_5->setPixmap(*ufp.drawingmap);
 			ufp.drawingpainter->setPen(*ufp.qcolor);
 			update();
 		}
 		if (e->button() == Qt::RightButton)
 		{
 			IsPress = false;
-
-			int id;
-
-
-			ClipCohen(id, StartPoint.x(), StartPoint.y(), LastPoint.x(), LastPoint.y());
+			for (int j = 0; j < ClipId.size(); j++)
+			{
+				int id = ClipId[j];
+				ClipCohen(id, StartPoint.x(), StartPoint.y(), LastPoint.x(), LastPoint.y());
+			}
+			ClipId.clear();
 			ufp.drawingmap->fill(Qt::transparent);
 			ui.label_5->setPixmap(*ufp.drawingmap);
 			StartPoint.setX(-1);
