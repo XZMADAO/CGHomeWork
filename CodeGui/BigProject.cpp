@@ -6,27 +6,12 @@ BigProject::BigProject(QWidget *parent)
 
 
 	ui.setupUi(this);
-//	ui.label->stackUnder(ui.label_5);
 	nc = new NewCanvas();
-	//le = new LineEdit();
-	//ee = new EllipseEdit();
-	pe = new PolygonEdit();
-	te = new TranslateEdit();
 	connect(ui.pushButton, SIGNAL(clicked(bool)), this, SLOT(CreateNewCanvasDialog()));
 	connect(ui.pushButton_2, SIGNAL(clicked(bool)), this, SLOT(SaveCanvas()));
-	//connect(ui.pushButton_3, SIGNAL(clicked(bool)), this, SLOT(CreateLineEditDialog()));
-	//connect(ui.pushButton_4, SIGNAL(toggled()), this, SLOT(ClickPolygon()));
-	//connect(ui.pushButton_5, SIGNAL(clicked(bool)), this, SLOT(CreateEllipseEditDialog()));
-
 	connect(ui.pushButton_7, SIGNAL(clicked(bool)), this, SLOT(SetColor()));
-	//connect(ui.pushButton_8, SIGNAL(clicked(bool)), this, SLOT(CreateTranslateEditDialog()));
 	connect(nc, SIGNAL(SendCanvasData(int,int)), this, SLOT(CreateCanvas(int,int)));
-	//connect(le, SIGNAL(SendDDALineData(float, float, float, float,int)), this, SLOT(CreateDDALine(float, float, float, float,int)));
-	//connect(le, SIGNAL(SendBresenhamLineData(float, float, float, float, int)), this, SLOT(CreateBresenham(float, float, float, float, int)));
-	//connect(ee, SIGNAL(SendEllipseData(int, int, int, int, int)), this, SLOT(CreateElipse(int, int, int, int, int)));
-	//connect(pe, SIGNAL(SendDDAPolygonData(int, int, vector<int>)), this, SLOT(CreateDDAPolygon(int, int, vector<int>)));
-	//connect(pe, SIGNAL(SendBresenhamPolygonData(int, int, vector<int>)), this, SLOT(CreateBresenhamPolygon(int, int, vector<int>)));
-	connect(te, SIGNAL(SendTranslateData(int, int, int)), this, SLOT(Translate(int, int, int)));
+	/*Map Init*/
 	ufp.IDcount = 0;
 	ufp.qmap = new QPixmap(640, 480);
 	ufp.drawingmap = new QPixmap(640, 480);
@@ -56,26 +41,8 @@ void BigProject::CreateNewCanvasDialog()
 {
 	nc->show();
 }
-/*
-void BigProject::CreateLineEditDialog()
-{
-	le->show();
-}
 
-void BigProject::CreateEllipseEditDialog()
-{
-	ee->show();
-}
 
-void BigProject::CreatePolygonEditDialog()
-{
-	pe->show();
-}
-*/
-void BigProject::CreateTranslateEditDialog()
-{
-	te->show();
-}
 void BigProject::CreateCanvas(int width, int length)
 {
 	ufp.pd.clear();
@@ -458,9 +425,6 @@ vector<CurvePoint>BigProject:: CreateBezierCurve(vector<CurvePoint> point)
 	return respoint;
 }
 
-
-
-
 void BigProject::Translate(int id, int dx, int dy)
 {
 	int i;
@@ -575,6 +539,9 @@ void BigProject::ClipCohen(int id, int x1, int y1, int x2, int y2)
 	ui.label->setPixmap(*ufp.qmap);
 }
 
+
+
+
 void BigProject::SetFourPoint(int x1, int y1, int x, int y,int choose,int index)
 {
 	if(choose==1)
@@ -600,15 +567,7 @@ void BigProject::SetFourPoint(int x1, int y1, int x, int y,int choose,int index)
 		ufp.drawingpainter->drawPoint((x1 - x), (y1 - y));
 	}
 }
-bool BigProject::IsinPd(int id)
-{
-	for (int i = 0; i < ufp.pd.size(); i++)
-	{
-		if (ufp.pd[i].id == id)
-			return true;
-	}
-	return false;
-}
+
 
 bool BigProject::IsinMap(QMouseEvent*e)
 {
@@ -621,6 +580,118 @@ bool BigProject::IsinMap(QMouseEvent*e)
 	return true;
 }
 
+int BigProject::FindID(QMouseEvent *e)
+{
+
+	int posx = e->pos().x()-10;
+	int posy = e->pos().y()-100;
+	int id=0;
+	int mindis=99999999;
+	/*
+	queue<int> pointx;
+	queue<int> pointy;
+	queue<int> count;
+	pointx.push(posx);
+	pointy.push(posy);
+	count.push(counttime);
+	Color[posx - 10][posy - 100] = true;
+	while (pointx.size() != 0)
+	{
+		int tempcount = count.front();
+		posx = pointx.front();
+		posy = pointy.front();
+		count.pop();
+		pointx.pop();
+		pointy.pop();
+		for (int j = 0; j < ufp.pd.size(); j++)
+		{
+			for (int k = 0; k < ufp.pd[j].allpointx.size(); k++)
+			{
+				if (posx == ufp.pd[j].allpointx[k]&&posy==ufp.pd[j].allpointy[k])
+					return ufp.pd[j].id;
+			}
+		}
+
+		int tempposx1 = posx + 1, temposy1 = posy + 1;
+		if (!Color[tempposx1-10][temposy1-100]&&tempcount<20)
+		{
+			pointx.push(tempposx1);
+			pointy.push(temposy1);
+			count.push(tempcount + 1);
+			Color[tempposx1-10][temposy1-100] = true;
+		}
+		int tempposx2 = posx + 1, temposy2 = posy + 0;
+		if (!Color[tempposx2-10][temposy2-100] && tempcount < 20)
+		{
+			pointx.push(tempposx2);
+			pointy.push(temposy2);
+			count.push(tempcount + 1);
+			Color[tempposx2-10][temposy2-100] = true;
+		}
+		int tempposx3 = posx + 1, temposy3 = posy - 1;
+		if (!Color[tempposx3-10][temposy3-100] && tempcount < 20)
+		{
+			pointx.push(tempposx3);
+			pointy.push(temposy3);
+			count.push(tempcount + 1);
+			Color[tempposx3-10][temposy3-100] = true;
+		}
+		int tempposx4 = posx + 0, temposy4 = posy - 1;
+		if (!Color[tempposx4 -10][temposy4 -100] && tempcount < 20)
+		{
+			pointx.push(tempposx4);
+			pointy.push(temposy4);
+			count.push(tempcount + 1);
+			Color[tempposx4-10][temposy4-100] = true;
+		}
+		int tempposx5 = posx - 1, temposy5 = posy - 1;
+		if (!Color[tempposx5-10][temposy5-100] && tempcount < 20)
+		{
+			pointx.push(tempposx5);
+			pointy.push(temposy5);
+			count.push(tempcount + 1);
+			Color[tempposx5-10][temposy5-100] = true;
+		}
+		int tempposx6 = posx - 1, temposy6 = posy + 0;
+		if (!Color[tempposx6-10][temposy1-100] && tempcount < 20)
+		{
+			pointx.push(tempposx6);
+			pointy.push(temposy6);
+			count.push(tempcount + 1);
+			Color[tempposx6-10][temposy6-100] = true;
+		}
+		int tempposx7 = posx - 1, temposy7 = posy + 1;
+		if (!Color[tempposx7-10][temposy7-100] && tempcount < 20)
+		{
+			pointx.push(tempposx7);
+			pointy.push(temposy7);
+			count.push(tempcount + 1);
+			Color[tempposx7-10][temposy7-100] = true;
+		}
+		int tempposx8 = posx + 0, temposy8 = posy + 1;
+		if (!Color[tempposx8-10][temposy8-100] && tempcount < 20)
+		{
+			pointx.push(tempposx8);
+			pointy.push(temposy8);
+			count.push(tempcount + 1);
+			Color[tempposx8-10][temposy8-100] = true;
+		}
+	}
+	*/
+	for (int j = 0; j < ufp.pd.size(); j++)
+	{
+		for (int k = 0; k < ufp.pd[j].allpointx.size(); k++)
+		{
+			int dis = pow((ufp.pd[j].allpointx[k] - posx), 2) + pow((ufp.pd[j].allpointy[k] - posy), 2);
+			if (dis < mindis)
+			{
+				id = ufp.pd[j].id;
+				mindis = dis;
+			}
+		}
+	}
+	return id;
+}
 /*Paint Test*/
 
 void BigProject::paintEvent(QPaintEvent *e)
@@ -696,6 +767,9 @@ void BigProject::paintEvent(QPaintEvent *e)
 	}
 }
 
+
+
+
 void BigProject::mousePressEvent(QMouseEvent *e)
 {
 	if (ui.pushButton_3->isChecked())
@@ -765,16 +839,37 @@ void BigProject::mousePressEvent(QMouseEvent *e)
 	}
 	if (ui.pushButton_8->isChecked())
 	{
-		StartPoint = e->pos();
-		LastPoint = e->pos();
-		StartPoint.setX(StartPoint.x() - 10);
-		StartPoint.setY(StartPoint.y() - 100);
-		LastPoint.setX(LastPoint.x() - 10);
-		LastPoint.setY(LastPoint.y() - 100);
-		OffsetX = LastPoint.x() - StartPoint.x();
-		OffsetY = LastPoint.y() - StartPoint.y();
-		IsPress = true;
-		update();
+		if (e->button() == Qt::LeftButton)
+		{
+			StartPoint = e->pos();
+			LastPoint = e->pos();
+			StartPoint.setX(StartPoint.x() - 10);
+			StartPoint.setY(StartPoint.y() - 100);
+			LastPoint.setX(LastPoint.x() - 10);
+			LastPoint.setY(LastPoint.y() - 100);
+			OffsetX = LastPoint.x() - StartPoint.x();
+			OffsetY = LastPoint.y() - StartPoint.y();
+			IsPress = true;
+			update();
+		}
+		if (e->button() == Qt::RightButton)
+		{
+			ufp.drawingmap->fill(Qt::transparent);
+			ui.label_5->setPixmap(*ufp.drawingmap);
+			ChooseID = FindID(e);
+			ufp.drawingpainter->setPen(QPen(*ufp.qcolor, 2));
+			for (int i = 0; i < ufp.pd.size(); i++)
+			{
+				if (ufp.pd[i].id == ChooseID)
+				{
+					for (int j = 0; j < ufp.pd[i].allpointx.size(); j++)
+					{
+						ufp.drawingpainter->drawPoint(ufp.pd[i].allpointx[j],ufp.pd[i].allpointy[j]);
+					}
+				}
+			}
+			ui.label_5->setPixmap(*ufp.drawingmap);
+		}
 	}
 	if (ui.pushButton_9->isChecked())
 	{
@@ -858,7 +953,6 @@ void BigProject::mouseMoveEvent(QMouseEvent *e)
 	{
 		if (IsPress)
 		{
-
 			LastPoint = e->pos();
 			LastPoint.setX(LastPoint.x() - 10);
 			LastPoint.setY(LastPoint.y() - 100);
@@ -867,17 +961,7 @@ void BigProject::mouseMoveEvent(QMouseEvent *e)
 			StartPoint = LastPoint;
 			if (IsPress&&StartPoint.x() > 0)
 			{
-				QString strid = ui.lineEdit_5->text();
-				int id = strid.toInt();
-				if (!IsinPd(id))
-				{
-					QMessageBox::warning(NULL, tr("Warning"), QString("id isn't existed!"));
-					ui.lineEdit_5->clear();
-					ufp.drawingmap->fill(Qt::transparent);
-					ui.label_5->setPixmap(*ufp.drawingmap);
-					curpoint.clear();
-					return;
-				}
+				int id = ChooseID;
 				Translate(id, OffsetX, OffsetY);
 			}
 	
@@ -906,14 +990,7 @@ void BigProject::mouseReleaseEvent(QMouseEvent *e)
 		PainterData temp;
 		int id = ufp.IDcount;
 		ufp.IDcount++;
-		if (IsinPd(id))
-		{
-			QMessageBox::warning(NULL, tr("Warning"), QString("id is existed!"));
-			ufp.drawingmap->fill(Qt::transparent);
-			ui.label_5->setPixmap(*ufp.drawingmap);
-			ui.lineEdit_5->clear();
-			return;
-		}
+
 		temp.id = id;
 		temp.point.push_back(StartPoint.x());
 		temp.point.push_back(StartPoint.y());
@@ -937,14 +1014,7 @@ void BigProject::mouseReleaseEvent(QMouseEvent *e)
 		PainterData temp;
 		int id = ufp.IDcount;
 		ufp.IDcount++;
-		if (IsinPd(id))
-		{
-			QMessageBox::warning(NULL, tr("Warning"), QString("id is existed!"));
-			ufp.drawingmap->fill(Qt::transparent);
-			ui.label_5->setPixmap(*ufp.drawingmap);
-			ui.lineEdit_5->clear();
-			return;
-		}
+
 
 		temp.id = id;
 		temp.point.push_back((float)Centre.x());
@@ -972,14 +1042,7 @@ void BigProject::mouseReleaseEvent(QMouseEvent *e)
 				PainterData temp;
 				int id = ufp.IDcount;
 				ufp.IDcount++;
-				if (IsinPd(id))
-				{
-					QMessageBox::warning(NULL, tr("Warning"), QString("id is existed!"));
-					ufp.drawingmap->fill(Qt::transparent);
-					ui.label_5->setPixmap(*ufp.drawingmap);
-					ui.lineEdit_5->clear();
-					return;
-				}
+	
 				temp.pointcount = 2;
 				temp.id = id;
 				temp.point.push_back(StartPoint.x());
@@ -1022,28 +1085,6 @@ void BigProject::mouseReleaseEvent(QMouseEvent *e)
 		if (e->button() == Qt::LeftButton)
 		{
 			IsPress = false;
-			/*
-			QString strid = ui.lineEdit_5->text();
-			int id = strid.toInt();
-			if (strid.toStdString() == "")
-			{
-
-				QMessageBox::warning(NULL, tr("Warning"), QString("id is empty!"));
-				ufp.drawingmap->fill(Qt::transparent);
-				ui.label_5->setPixmap(*ufp.drawingmap);
-				curpoint.clear();
-				return;
-			}
-			if (IsinPd(id))
-			{
-				QMessageBox::warning(NULL, tr("Warning"), QString("id is existed!"));
-				ui.lineEdit_5->clear();
-				ufp.drawingmap->fill(Qt::transparent);
-				ui.label_5->setPixmap(*ufp.drawingmap);
-				curpoint.clear();
-				return;
-			}
-			*/
 			update();
 		}
 		if (e -> button() == Qt::RightButton)
@@ -1052,14 +1093,7 @@ void BigProject::mouseReleaseEvent(QMouseEvent *e)
 			PainterData temp;
 			ufp.IDcount++;
 			int id = ufp.IDcount;
-			if (IsinPd(id))
-			{
-				QMessageBox::warning(NULL, tr("Warning"), QString("id is existed!"));
-				ui.lineEdit_5->clear();
-				ufp.drawingmap->fill(Qt::transparent);
-				ui.label_5->setPixmap(*ufp.drawingmap);
-				return;
-			}
+
 			temp.id = id;
 			temp.pointcount = curpoint.size();
 			temp.type = CurveType;
@@ -1102,23 +1136,10 @@ void BigProject::mouseReleaseEvent(QMouseEvent *e)
 		if (e->button() == Qt::RightButton)
 		{
 			IsPress = false;
-			QString strid = ui.lineEdit_5->text();
-			int id = strid.toInt();
-			if (strid.toStdString() == "")
-			{
-				QMessageBox::warning(NULL, tr("Warning"), QString("id is empty!"));
-				ufp.drawingmap->fill(Qt::transparent);
-				ui.label_5->setPixmap(*ufp.drawingmap);
-				return;
-			}
-			if (!IsinPd(id))
-			{
-				QMessageBox::warning(NULL, tr("Warning"), QString("id isn't existed!"));
-				ui.lineEdit_5->clear();
-				ufp.drawingmap->fill(Qt::transparent);
-				ui.label_5->setPixmap(*ufp.drawingmap);
-				return;
-			}
+
+			int id;
+
+
 			ClipCohen(id, StartPoint.x(), StartPoint.y(), LastPoint.x(), LastPoint.y());
 			ufp.drawingmap->fill(Qt::transparent);
 			ui.label_5->setPixmap(*ufp.drawingmap);
@@ -1128,6 +1149,7 @@ void BigProject::mouseReleaseEvent(QMouseEvent *e)
 		}
 	}
 }
+
 
 
 
